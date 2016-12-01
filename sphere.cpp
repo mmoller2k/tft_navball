@@ -84,8 +84,8 @@ TPoint3D SPoint(int phi, int lambda, int alpha, int beta, int gamma)
     q = RotY(q, beta);
     q = RotX(q, alpha);
     q = RotZ(q, gamma);
-    q.x = scale(q.x);
-    q.y = scale(q.y);
+    //q.x = scale(q.x);
+    //q.y = scale(q.y);
     return q;
 }
 

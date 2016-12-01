@@ -44,6 +44,9 @@ TFT_HX8357 tft = TFT_HX8357();       // Invoke custom library
 
 #define TFT_GREY 0x7BEF
 
+#define XOFFS 160
+#define YOFFS 160
+
 uint32_t runTime = 0;
 TSphere3D sphere3D[2];
 const int resSphere[]={8,8,10,12,16,16,16,12,10,8,8};
@@ -92,15 +95,17 @@ void tft_loop()
 void drawSphere(int alpha, int beta, int gamma)
 {
     double phi, lambda;
-    int i,ii,j,jj,x0,y0,x1,y1;
+    int i,ii,j,jj,x0,y0,x1,y1,x2,y2,x3,y3;
     int res=ROUND;
     static int lc=0;
     int s = lc&1;
 
     //tft.fillRect(0, 0, 480, 320, TFT_BLACK);
     lc++;
-    if(!(lc%4))tft.drawCircle(160,160,124,TFT_LIGHTGREY);
-    unsigned color=TFT_WHITE;
+    //if(!(lc%4))
+    //tft.drawCircle(160,160,128,TFT_BLACK);
+    unsigned lcolor=TFT_WHITE;
+    unsigned scolor;
 
     SphereVis = !SphereVis;
     for(i=0;i<LATS;i++){
@@ -114,9 +119,12 @@ void drawSphere(int alpha, int beta, int gamma)
     }
 
     for(i=0;i<LATS;i++){
-      if(i==LATS/2)color=TFT_WHITE;
-      else if(i<LATS/2)color=TFT_ORANGE;
-      else color=TFT_CYAN;
+      if(i==LATS/2)lcolor=TFT_WHITE;
+      else if(i<LATS/2)lcolor=TFT_ORANGE;
+      else lcolor=TFT_CYAN;
+      if(i<LATS/2)scolor=TFT_ORANGE;
+      else scolor=TFT_CYAN;
+
       //res = resSphere[i];
       ii=i+1;
       for(j=0;j<res;j++){
@@ -124,49 +132,75 @@ void drawSphere(int alpha, int beta, int gamma)
         jj=(j+1)%res;
         
         if(sphere3D[!SphereVis].p[i][j].z>0){
-          x0 = sphere3D[!SphereVis].p[i][j].x;
-          y0 = sphere3D[!SphereVis].p[i][j].y;
-          x1 = sphere3D[!SphereVis].p[i][jj].x;
-          y1 = sphere3D[!SphereVis].p[i][jj].y;
-          tft.drawLine(x0,y0,x1,y1,TFT_BLACK);
+          x0 = sphere3D[!SphereVis].p[i][j].x + XOFFS;
+          y0 = sphere3D[!SphereVis].p[i][j].y + YOFFS;
+          x1 = sphere3D[!SphereVis].p[i][jj].x + XOFFS;
+          y1 = sphere3D[!SphereVis].p[i][jj].y + YOFFS;
+          x2 = sphere3D[!SphereVis].p[ii][j].x + XOFFS;
+          y2 = sphere3D[!SphereVis].p[ii][j].y + YOFFS;
+          x3 = sphere3D[!SphereVis].p[ii][jj].x + XOFFS;
+          y3 = sphere3D[!SphereVis].p[ii][jj].y + YOFFS;
+          tft.drawLine(x0,y0,x1,y1,lcolor);
+
+          /* fill only the equator */
+          if(i==4){
+            tft.fillTriangle(x0,y0,x1,y1,x2,y2,TFT_CYAN);
+            //tft.fillTriangle(x0,y0,x1,y1,x3,y3,TFT_ORANGE);
+            //tft.fillTriangle(x3,y3,x1,y1,x2,y2,TFT_BLACK);
+          }
+          else if(i==3){
+            tft.fillTriangle(x2,y2,x3,y3,x0,y0,TFT_ORANGE);
+          }
+
           if(ii<LATS){// && (j%(ROUND/4))==0){
-            x0 = sphere3D[!SphereVis].p[i][j].x;
-            y0 = sphere3D[!SphereVis].p[i][j].y;
-            x1 = sphere3D[!SphereVis].p[ii][j].x;
-            y1 = sphere3D[!SphereVis].p[ii][j].y;
+            x0 = sphere3D[!SphereVis].p[i][j].x + XOFFS;
+            y0 = sphere3D[!SphereVis].p[i][j].y + YOFFS;
+            x1 = sphere3D[!SphereVis].p[ii][j].x + XOFFS;
+            y1 = sphere3D[!SphereVis].p[ii][j].y + YOFFS;
             if((j%(ROUND/4))==0){
-              tft.drawLine(x0,y0,x1,y1,TFT_BLACK);
+              tft.drawLine(x0,y0,x1,y1,scolor);
             }
-            tft.drawRect((x0+x1)/2-1,(y0+y1)/2-1,2,2,TFT_BLACK);
+            tft.drawRect((x0+x1)/2-1,(y0+y1)/2-1,2,2,scolor);
           }
         }
+      }
+      for(j=0;j<res;j++){
+        SerialHelper();
+        jj=(j+1)%res;
 
         if(sphere3D[SphereVis].p[i][j].z>0){
-          x0 = sphere3D[SphereVis].p[i][j].x;
-          y0 = sphere3D[SphereVis].p[i][j].y;
-          x1 = sphere3D[SphereVis].p[i][jj].x;
-          y1 = sphere3D[SphereVis].p[i][jj].y;
-          tft.drawLine(x0,y0,x1,y1,color);
+          x0 = sphere3D[SphereVis].p[i][j].x + XOFFS;
+          y0 = sphere3D[SphereVis].p[i][j].y + YOFFS;
+          x1 = sphere3D[SphereVis].p[i][jj].x + XOFFS;
+          y1 = sphere3D[SphereVis].p[i][jj].y + YOFFS;
+          x2 = sphere3D[SphereVis].p[ii][j].x + XOFFS;
+          y2 = sphere3D[SphereVis].p[ii][j].y + YOFFS;
+          x3 = sphere3D[SphereVis].p[ii][jj].x + XOFFS;
+          y3 = sphere3D[SphereVis].p[ii][jj].y + YOFFS;
+/*          
+          if(i==4){
+            tft.fillTriangle(x0,y0,x1,y1,x2,y2,color);
+            tft.fillTriangle(x3,y3,x1,y1,x2,y2,color);
+          }
+*/          
+          tft.drawLine(x0,y0,x1,y1,TFT_GREY);
+
           if(ii<LATS){// && (j%(ROUND/4))==0){
-            x0 = sphere3D[SphereVis].p[i][j].x;
-            y0 = sphere3D[SphereVis].p[i][j].y;
-            x1 = sphere3D[SphereVis].p[ii][j].x;
-            y1 = sphere3D[SphereVis].p[ii][j].y;
+            x0 = sphere3D[SphereVis].p[i][j].x + XOFFS;
+            y0 = sphere3D[SphereVis].p[i][j].y + YOFFS;
+            x1 = sphere3D[SphereVis].p[ii][j].x + XOFFS;
+            y1 = sphere3D[SphereVis].p[ii][j].y + YOFFS;
             if((j%(ROUND/4))==0){
-              tft.drawLine(x0,y0,x1,y1,TFT_WHITE);
+              tft.drawLine(x0,y0,x1,y1,TFT_LIGHTGREY);
             }
-            if(i<LATS/2){
-              tft.drawRect((x0+x1)/2-1,(y0+y1)/2-1,2,2,TFT_ORANGE);
-            }
-            else{
-              tft.drawRect((x0+x1)/2-1,(y0+y1)/2-1,2,2,TFT_CYAN);
-            }
+            tft.drawRect((x0+x1)/2-1,(y0+y1)/2-1,2,2,TFT_BLACK);
           }
         }
       }
     }
     navPtr();
     ballvals();
+    //tft.drawCircle(160,160,128,TFT_BLACK);
 }
 
 void navPtr(void)
@@ -178,41 +212,57 @@ void navPtr(void)
   tft.drawPixel(160,160,TFT_YELLOW);
 }
 
+#define TEXT_R (110*110)
 void ballvals(void)
 {
   int i,j;
   int x0,y0;
+  long r,xr,yr;
   int yaw[]={0,90,180,270};
   int pit[]={80,60,40,20,0,20,40,60,80};
+  unsigned scolor;
   for(i=0;i<ROUND;i+=(ROUND/4)){
     SerialHelper();
     if(sphere3D[!SphereVis].p[4][i].z>0){
-      x0 = sphere3D[!SphereVis].p[4][i].x;
-      y0 = sphere3D[!SphereVis].p[4][i].y;
-      tft.setTextColor(TFT_BLACK);
-      tft.drawNumber(yaw[i/(ROUND/4)],x0,y0,2);
+      x0 = sphere3D[!SphereVis].p[4][i].x + XOFFS;
+      y0 = sphere3D[!SphereVis].p[4][i].y + YOFFS;
+      //tft.setTextColor(TFT_ORANGE);
+      //tft.drawNumber(yaw[i/(ROUND/4)],x0,y0,2);
     }
     if(sphere3D[SphereVis].p[4][i].z>0){
-      x0 = sphere3D[SphereVis].p[4][i].x;
-      y0 = sphere3D[SphereVis].p[4][i].y;
-      tft.setTextColor(TFT_WHITE);
+      x0 = sphere3D[SphereVis].p[4][i].x + XOFFS;
+      y0 = sphere3D[SphereVis].p[4][i].y + YOFFS;
+      tft.setTextColor(TFT_BLACK);
       tft.drawNumber(yaw[i/(ROUND/4)],x0,y0,2);
     }
   }
   for(j=0;j<LATS;j++){
-    for(i=2;i<ROUND;i+=(ROUND/4)){
+    if(j<LATS/2)scolor=TFT_ORANGE;
+    else scolor=TFT_CYAN;
+
+    for(i=3;i<ROUND;i+=(ROUND/4)){
       SerialHelper();
       if(sphere3D[!SphereVis].p[j][i].z>0){
-      x0 = sphere3D[!SphereVis].p[j][i].x;
-      y0 = sphere3D[!SphereVis].p[j][i].y;
-      tft.setTextColor(TFT_BLACK);
-      tft.drawNumber(pit[j],x0,y0,2);
+        xr = sphere3D[!SphereVis].p[j][i].x;
+        yr = sphere3D[!SphereVis].p[j][i].y;
+        x0 = xr + XOFFS;
+        y0 = yr + YOFFS;
+        xr+=6;
+        yr+=8;
+        r = (xr*xr) + (yr*yr);
+        tft.setTextColor(scolor);
+        if(j!=4 && r<TEXT_R)tft.drawNumber(pit[j],x0,y0,2);
       }
       if(sphere3D[SphereVis].p[j][i].z>0){
-      x0 = sphere3D[SphereVis].p[j][i].x;
-      y0 = sphere3D[SphereVis].p[j][i].y;
-      tft.setTextColor(TFT_LIGHTGREY);
-      tft.drawNumber(pit[j],x0,y0,2);
+        xr = sphere3D[SphereVis].p[j][i].x;
+        yr = sphere3D[SphereVis].p[j][i].y;
+        x0 = xr + XOFFS;
+        y0 = yr + YOFFS;
+        xr+=6;
+        yr+=8;
+        r = (xr*xr) + (yr*yr);
+        tft.setTextColor(TFT_LIGHTGREY);
+        if(j!=4 && r<TEXT_R)tft.drawNumber(pit[j],x0,y0,2);
       }
     }
   }
