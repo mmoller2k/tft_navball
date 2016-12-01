@@ -76,7 +76,7 @@ static TPoint3D RotZ(const TPoint3D p, int gamma)
 }
 
 //#define scale(x) (x/(TRIGRES>>7)+160)
-#define scale(x) (x+160)
+//#define scale(x) (x+160)
 TPoint3D SPoint(int phi, int lambda, int alpha, int beta, int gamma)
 {
     TPoint3D q;
@@ -84,8 +84,8 @@ TPoint3D SPoint(int phi, int lambda, int alpha, int beta, int gamma)
     q = RotY(q, beta);
     q = RotX(q, alpha);
     q = RotZ(q, gamma);
-    //q.x = scale(q.x);
-    //q.y = scale(q.y);
+    q.x += XOFFS;
+    q.y += YOFFS;
     return q;
 }
 
