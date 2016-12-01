@@ -196,10 +196,10 @@ void drawSphere(int alpha, int beta, int gamma)
         x3 = sphere3D[SphereVis].p[ii][jj].x;
         y3 = sphere3D[SphereVis].p[ii][jj].y;
           /* fill only the equator */
-        if(i==3 && (z2>0 || z3>0)){
+        if(i==3 && (z1>0)){
           tft.fillTriangle(x2,y2,x3,y3,x1,y1,TFT_ORANGE);
         }
-        if(i==4 && (z0>0 || z1>0)){
+        if(i==4 && (z2>0)){
           tft.fillTriangle(x0,y0,x1,y1,x2,y2,TFT_CYAN);
         }
 
