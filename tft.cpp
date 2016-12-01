@@ -200,7 +200,7 @@ void ballvals(void)
     }
   }
   for(j=0;j<LATS;j++){
-    for(i=2;i<ROUND;i+=(ROUND/4)){
+    for(i=3;i<ROUND;i+=(ROUND/4)){
       SerialHelper();
       if(sphere3D[!SphereVis].p[j][i].z>0){
       x0 = sphere3D[!SphereVis].p[j][i].x;
