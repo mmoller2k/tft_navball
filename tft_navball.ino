@@ -9,12 +9,17 @@ void setup() {
 
 void loop()
 {
+#if 0
   if(input()==1){
     tft_loop();
   }
   else{
     showParam();
   }
+#else  
+  input();
+  tft_loop();
+#endif  
   output();
 }
 

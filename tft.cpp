@@ -26,18 +26,28 @@
 
 //#define CENTRE 240
 
+#define BOARD_DUE
+
+#ifdef BOARD_DUE
+#include <TFT_HX8357_Due.h>
+#else
 #include <TFT_HX8357.h> // Hardware-specific library
+#endif
 #include "sphere.h"
 #include "comms.h"
 
+#ifdef BOARD_DUE
+TFT_HX8357_Due tft = TFT_HX8357_Due();       // Invoke custom library
+#else
 TFT_HX8357 tft = TFT_HX8357();       // Invoke custom library
+#endif
 
 #define TFT_GREY 0x7BEF
 
 uint32_t runTime = 0;
 TSphere3D sphere3D[2];
 const int resSphere[]={8,8,10,12,16,16,16,12,10,8,8};
-int SphereVis=0;
+static int SphereVis=0;
 unsigned long tLast, tNow;
 extern boolean Connected;
 
@@ -60,16 +70,22 @@ void tft_setup()
 
 void tft_loop()
 {
-  int a=0,b=0,c=0;
+  static int a=0,b=0,c=0;
 
   showParam();
   tft.setTextColor(TFT_LIGHTGREY,TFT_BLACK);
   tft.drawNumber(1000/(tNow-tLast), 0,0,2); //FPS
   tLast=tNow;
   tNow=millis();
-  a = VData.Pitch;
-  b = -VData.Heading;
-  c = -VData.Roll;
+  if(Connected){
+    a = VData.Pitch;
+    b = -VData.Heading;
+    c = -VData.Roll;
+  }
+  else{
+    a++; b+=3;
+    a%=360; b%=360;
+  }
   drawSphere(a, b, c);
 }
 
@@ -78,9 +94,12 @@ void drawSphere(int alpha, int beta, int gamma)
     double phi, lambda;
     int i,ii,j,jj,x0,y0,x1,y1;
     int res=ROUND;
+    static int lc=0;
+    int s = lc&1;
 
     //tft.fillRect(0, 0, 480, 320, TFT_BLACK);
-    tft.drawCircle(160,160,124,TFT_LIGHTGREY);
+    lc++;
+    if(!(lc%4))tft.drawCircle(160,160,124,TFT_LIGHTGREY);
     unsigned color=TFT_WHITE;
 
     SphereVis = !SphereVis;
@@ -110,13 +129,16 @@ void drawSphere(int alpha, int beta, int gamma)
           x1 = sphere3D[!SphereVis].p[i][jj].x;
           y1 = sphere3D[!SphereVis].p[i][jj].y;
           tft.drawLine(x0,y0,x1,y1,TFT_BLACK);
-        }
-        if(ii<LATS && (j%(ROUND/4))==0 && sphere3D[!SphereVis].p[i][j].z>0){
-          x0 = sphere3D[!SphereVis].p[i][j].x;
-          y0 = sphere3D[!SphereVis].p[i][j].y;
-          x1 = sphere3D[!SphereVis].p[ii][j].x;
-          y1 = sphere3D[!SphereVis].p[ii][j].y;
-          tft.drawLine(x0,y0,x1,y1,TFT_BLACK);
+          if(ii<LATS){// && (j%(ROUND/4))==0){
+            x0 = sphere3D[!SphereVis].p[i][j].x;
+            y0 = sphere3D[!SphereVis].p[i][j].y;
+            x1 = sphere3D[!SphereVis].p[ii][j].x;
+            y1 = sphere3D[!SphereVis].p[ii][j].y;
+            if((j%(ROUND/4))==0){
+              tft.drawLine(x0,y0,x1,y1,TFT_BLACK);
+            }
+            tft.drawRect((x0+x1)/2-1,(y0+y1)/2-1,2,2,TFT_BLACK);
+          }
         }
 
         if(sphere3D[SphereVis].p[i][j].z>0){
@@ -125,13 +147,21 @@ void drawSphere(int alpha, int beta, int gamma)
           x1 = sphere3D[SphereVis].p[i][jj].x;
           y1 = sphere3D[SphereVis].p[i][jj].y;
           tft.drawLine(x0,y0,x1,y1,color);
-        }
-        if(ii<LATS && (j%(ROUND/4))==0 && sphere3D[SphereVis].p[i][j].z>0){
-          x0 = sphere3D[SphereVis].p[i][j].x;
-          y0 = sphere3D[SphereVis].p[i][j].y;
-          x1 = sphere3D[SphereVis].p[ii][j].x;
-          y1 = sphere3D[SphereVis].p[ii][j].y;
-          tft.drawLine(x0,y0,x1,y1,TFT_WHITE);
+          if(ii<LATS){// && (j%(ROUND/4))==0){
+            x0 = sphere3D[SphereVis].p[i][j].x;
+            y0 = sphere3D[SphereVis].p[i][j].y;
+            x1 = sphere3D[SphereVis].p[ii][j].x;
+            y1 = sphere3D[SphereVis].p[ii][j].y;
+            if((j%(ROUND/4))==0){
+              tft.drawLine(x0,y0,x1,y1,TFT_WHITE);
+            }
+            if(i<LATS/2){
+              tft.drawRect((x0+x1)/2-1,(y0+y1)/2-1,2,2,TFT_ORANGE);
+            }
+            else{
+              tft.drawRect((x0+x1)/2-1,(y0+y1)/2-1,2,2,TFT_CYAN);
+            }
+          }
         }
       }
     }
@@ -224,8 +254,8 @@ void showParam(void)
   tft.drawFloat(VData.VOrbit,1,m,y+=h,2);
   tft.drawNumber(VData.MNDeltaV,m,y+=h,2);
   tft.setTextPadding(24);
-  tft.drawNumber(VData.Heading,72,32,2);
-  tft.drawNumber(VData.Pitch,260,32,2);
+  tft.drawNumber(VData.Heading,72,32,4);
+  tft.drawNumber(VData.Pitch,260,32,4);
 
   tft.setTextDatum(TL_DATUM);
   if(Connected){
