@@ -1,6 +1,7 @@
 #include "comms.h"
 #include "tft.h"
 
+int lc=0;
 void setup() {
   Serial.begin(38400);
   tft_setup();
@@ -9,34 +10,15 @@ void setup() {
 
 void loop()
 {
-#if 0
+  lc++;
   if(input()==1){
     tft_loop();
   }
   else{
+    //tft_loop();
     showParam();
   }
-#else  
-  input();
-  tft_loop();
-#endif  
   output();
+  //if(!(lc%100))SerialUSB.println(lc);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
