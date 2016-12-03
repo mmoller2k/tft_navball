@@ -1,7 +1,7 @@
 #include "comms.h"
 
 //if no message received from KSP for more than 2s, go idle
-#define IDLETIMER 2000
+#define IDLETIMER 4000
 
 unsigned long deadtime, deadtimeOld;
 

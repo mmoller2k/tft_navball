@@ -3,7 +3,7 @@
 
 #define degtorad(a) ((a*M_PI/180.0))
 #define LATS 9
-#define ROUND 16
+#define ROUND 24
 #define XOFFS 160
 #define YOFFS 160
 

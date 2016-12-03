@@ -2,6 +2,7 @@
 
 #define details(name) (uint8_t*)&name,sizeof(name)
 
+#pragma pack(1)
 typedef struct
 {
   byte id;
@@ -86,7 +87,7 @@ typedef struct {
   int Throttle;                       //    0 -> 1000
   int WheelThrottle;                  //    0 -> 1000
 }ControlPacket;
-
+#pragma pack(0)
 
 extern HandShakePacket HPacket;
 extern ControlPacket CPacket;
